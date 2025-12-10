@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@args": ["./packages/args"],
+      "@fallback": ["./packages/fallback"],
+      "@handle": ["./packages/handle"],
+      "@listeners": ["./packages/listeners"],
+      "@matching": ["./packages/matching"],
+      "@params": ["./packages/params"],
+      "@popState": ["./packages/popState"],
+      "@pushState": ["./packages/pushState"],
+      "@router": ["./packages/router"],
+      "@urlFor": ["./packages/urlFor"]
+    }
+  },
+  "include": ["packages/**/*", "types.d.ts"],
+  "exclude": ["node_modules", "dist", "coverage"]
+}

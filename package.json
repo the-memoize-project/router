@@ -18,7 +18,10 @@
     "memoize",
     "memoize-router",
     "zero-dependencies",
-    "lightweight"
+    "lightweight",
+    "cloudflare-workers",
+    "edge-computing",
+    "worker"
   ],
   "author": "The Memoize Project Contributors",
   "license": "MIT",
@@ -40,6 +43,16 @@
       "types": "./types.d.ts",
       "import": "./dist/router.js",
       "require": "./dist/router.cjs"
+    },
+    "./browser": {
+      "types": "./types.d.ts",
+      "import": "./dist/browser.js",
+      "require": "./dist/browser.cjs"
+    },
+    "./worker": {
+      "types": "./types.d.ts",
+      "import": "./dist/worker.js",
+      "require": "./dist/worker.cjs"
     },
     "./package.json": "./package.json"
   },

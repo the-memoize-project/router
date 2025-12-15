@@ -6,7 +6,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        router: resolve(__dirname, "packages/router/index.js"),
+        router: resolve(__dirname, "packages/browser/router/index.js"),
+        browser: resolve(__dirname, "packages/browser.js"),
+        worker: resolve(__dirname, "packages/worker.js"),
       },
       formats: ["cjs", "es"],
     },
@@ -28,16 +30,16 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@args": resolve(__dirname, "packages/args"),
-      "@fallback": resolve(__dirname, "packages/fallback"),
-      "@handle": resolve(__dirname, "packages/handle"),
-      "@listeners": resolve(__dirname, "packages/listeners"),
-      "@matching": resolve(__dirname, "packages/matching"),
-      "@params": resolve(__dirname, "packages/params"),
-      "@popState": resolve(__dirname, "packages/popState"),
-      "@pushState": resolve(__dirname, "packages/pushState"),
-      "@router": resolve(__dirname, "packages/router"),
-      "@urlFor": resolve(__dirname, "packages/urlFor"),
+      "@args": resolve(__dirname, "packages/browser/args"),
+      "@fallback": resolve(__dirname, "packages/browser/fallback"),
+      "@handle": resolve(__dirname, "packages/browser/handle"),
+      "@listeners": resolve(__dirname, "packages/browser/listeners"),
+      "@matching": resolve(__dirname, "packages/browser/matching"),
+      "@params": resolve(__dirname, "packages/browser/params"),
+      "@popState": resolve(__dirname, "packages/browser/popState"),
+      "@pushState": resolve(__dirname, "packages/browser/pushState"),
+      "@router": resolve(__dirname, "packages/browser/router"),
+      "@urlFor": resolve(__dirname, "packages/browser/urlFor"),
     },
   },
 });

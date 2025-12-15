@@ -39,8 +39,9 @@ This repository (`router`) provides the **routing system** that powers navigatio
 - **Declarative**: Define routes without imperative navigation code
 - **Reactive**: Automatic route matching and parameter extraction
 - **Pattern-Based**: Supports dynamic route parameters like `/users/:id`
+- **Multi-Platform**: Works in browsers and Cloudflare Workers
 
-The router seamlessly integrates with Web Components and handles all navigation needs for the Memoize flashcard application.
+The router seamlessly integrates with Web Components and handles all navigation needs for both client-side and edge computing environments.
 
 ---
 
@@ -58,6 +59,7 @@ The router seamlessly integrates with Web Components and handles all navigation 
 - **🔒 Type Safe** - Full TypeScript definitions included
 - **⚙️ Framework Agnostic** - Works with any framework or vanilla JS
 - **📦 Tree-Shakeable** - Import only what you need
+- **🌐 Multi-Platform** - Browser and Cloudflare Workers support
 
 ---
 
@@ -81,8 +83,10 @@ pnpm add @the-memoize-project/router
 
 ### Basic Usage
 
+#### Browser
+
 ```javascript
-import router from "@the-memoize-project/router";
+import router from "@the-memoize-project/router/browser";
 
 // Define routes
 router("/", homePage)
@@ -97,6 +101,24 @@ router.handle();
 function navigate(path) {
   history.pushState({}, "", path);
   router.handle();
+}
+```
+
+#### Cloudflare Workers
+
+```javascript
+import router from "@the-memoize-project/router/worker";
+
+// Define routes
+router.get("/api/users/:id", getUser);
+router.post("/api/users", createUser);
+router.put("/api/users/:id", updateUser);
+router.delete("/api/users/:id", deleteUser);
+
+// Handle requests
+export default {
+  async fetch(request, env, ctx) {
+    return await router.handle(request, env, ctx) ?? new Response("Not Found", { status: 404 });
 }
 
 // Page handlers

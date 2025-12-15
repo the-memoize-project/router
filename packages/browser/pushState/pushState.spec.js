@@ -5,7 +5,8 @@ describe("pushState", () => {
     const handler = vi.fn();
     window.addEventListener("pushstate", handler);
 
-    await import("./pushState");
+    const { default: pushState } = await import("./pushState");
+    pushState();
 
     history.pushState(null, "", "/test");
 

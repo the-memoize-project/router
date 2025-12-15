@@ -2,10 +2,13 @@ import listeners from "../listeners/listeners.js";
 
 function findMatchingRoute(request) {
   const url = new URL(request.url);
-  const path = url.pathname.replace(/:\w+/g, "([a-z0-9-_]+)");
-  const pattern = new RegExp(`^${path}$`, "i");
+  const pathname = url.pathname;
 
-  return listeners[request.method].find(({ path }) => pattern.test(path)) ?? {};
+  return listeners[request.method].find(({ path }) => {
+    const pattern = path.replace(/:\w+/g, "([a-z0-9-_]+)");
+    const regex = new RegExp(`^${pattern}$`, "i");
+    return regex.test(pathname);
+  }) ?? {};
 }
 
 export default findMatchingRoute;

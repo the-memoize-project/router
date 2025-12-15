@@ -43,46 +43,20 @@
 
 ## Package Index
 
-### Core Packages
+> **Note:** Memoize Router has a multi-platform architecture with separate implementations for **Browser** and **Cloudflare Workers**.
 
-#### [router](./packages/router/)
-**Main routing module with chainable API**
+### Browser Packages (`packages/browser/`)
 
-- Route registration
-- Chainable syntax
+#### [router](./packages/browser/router/)
+**Chainable routing module for SPAs**
+
+- Route registration with chainable syntax
 - Handler management
-- Fallback support
+- Fallback support for 404s
 
 ---
 
-#### [params](./packages/params/)
-**Route parameter extraction**
-
-- Dynamic parameter capture
-- Multiple parameter support
-- Getter/setter pattern
-
----
-
-#### [args](./packages/args/)
-**Query string parsing**
-
-- URLSearchParams-based
-- Key-value extraction
-- URL decoding
-
----
-
-#### [urlFor](./packages/urlFor/)
-**Named route URL generation**
-
-- Route lookup by handler name
-- Parameter interpolation
-- Full URL construction
-
----
-
-#### [matching](./packages/matching/)
+#### [matching](./packages/browser/matching/)
 **Route pattern matcher**
 
 - Regex-based matching
@@ -91,7 +65,90 @@
 
 ---
 
-#### [handle](./packages/handle/)
+#### [fallback](./packages/browser/fallback/)
+**404 handler management**
+
+- Default handler storage
+- Not-found page support
+
+---
+
+#### [pushState](./packages/browser/pushState/)
+**History API wrapper**
+
+- Programmatic navigation
+- History stack management
+
+---
+
+#### [popState](./packages/browser/popState/)
+**Back/forward navigation**
+
+- Browser navigation events
+- History traversal
+
+---
+
+### Worker Packages (`packages/worker/`)
+
+#### [router](./packages/worker/router/)
+**Proxy-based HTTP router for Cloudflare Workers**
+
+- HTTP method routing (GET, POST, PUT, DELETE)
+- Handler management by method
+
+---
+
+#### [match](./packages/worker/match/)
+**HTTP method + path matcher**
+
+- Method-first routing
+- Path pattern matching
+- Efficient route lookup
+
+---
+
+#### [body](./packages/worker/body/)
+**Request body parser**
+
+- JSON parsing
+- Form data extraction
+- Content-type detection
+
+---
+
+### Shared Packages
+
+These packages exist in both `packages/browser/` and `packages/worker/` with minor platform-specific differences:
+
+#### params
+**Route parameter extraction**
+
+- Dynamic parameter capture (`:id` syntax)
+- Multiple parameter support
+- Getter/setter pattern
+
+---
+
+#### args
+**Query string parsing**
+
+- URLSearchParams-based
+- Key-value extraction
+- URL decoding
+
+---
+
+#### urlFor
+**Named route URL generation**
+
+- Route lookup by handler name
+- Parameter interpolation
+- Full URL construction
+
+---
+
+#### handle
 **Route handler executor**
 
 - Route resolution
@@ -100,36 +157,12 @@
 
 ---
 
-#### [listeners](./packages/listeners/)
+#### listeners
 **Route registry**
 
 - Route storage
-- Linear array structure
-- Order preservation
-
----
-
-#### [fallback](./packages/fallback/)
-**404 handler management**
-
-- Default handler storage
-- Not-found page support
-
----
-
-#### [pushState](./packages/pushState/)
-**History API wrapper**
-
-- Programmatic navigation
-- History stack management
-
----
-
-#### [popState](./packages/popState/)
-**Back/forward navigation**
-
-- Browser navigation events
-- History traversal
+- Browser: Linear array
+- Worker: Organized by HTTP method
 
 ---
 
@@ -137,10 +170,11 @@
 
 ### Route Registration Flow
 
+**Browser:**
 ```
 1. Import router
    ↓
-   import router from "@the-memoize-project/router"
+   import router from "@the-memoize-project/router/browser"
    ↓
 2. Register routes
    ↓
@@ -157,6 +191,27 @@
 5. Listen for navigation
    ↓
    window.addEventListener("popstate", () => router.handle())
+```
+
+**Worker:**
+```
+1. Import router
+   ↓
+   import router from "@the-memoize-project/router/worker"
+   ↓
+2. Register HTTP routes
+   ↓
+   router.get("/api/users/:id", getUser)
+   router.post("/api/users", createUser)
+   ↓
+3. Handle incoming requests
+   ↓
+   export default {
+     async fetch(request, env, ctx) {
+       return await router.handle(request, env, ctx) ??
+         new Response("Not Found", { status: 404 })
+     }
+   }
 ```
 
 ### URL Matching Flow
@@ -221,10 +276,10 @@ Return full URL
 
 ## Pattern Library
 
-### Pattern: Basic Route Setup
+### Pattern: Basic Route Setup (Browser)
 
 ```javascript
-import router, { params } from "@the-memoize-project/router";
+import router, { params } from "@the-memoize-project/router/browser";
 
 router("/", homePage)
   ("/about", aboutPage)
@@ -247,7 +302,43 @@ function userPage() {
 
 ---
 
-### Pattern: Navigation Links
+### Pattern: RESTful API Routes (Worker)
+
+```javascript
+import router, { params, body } from "@the-memoize-project/router/worker";
+
+router.get("/api/users/:id", async (request, env, ctx) => {
+  const { id } = params();
+  return new Response(JSON.stringify({ id }), {
+    headers: { "Content-Type": "application/json" }
+  });
+});
+
+router.post("/api/users", async (request, env, ctx) => {
+  const data = await body(request);
+  return new Response(JSON.stringify({ success: true, data }), {
+    status: 201,
+    headers: { "Content-Type": "application/json" }
+  });
+});
+
+export default {
+  async fetch(request, env, ctx) {
+    return await router.handle(request, env, ctx) ??
+      new Response("Not Found", { status: 404 });
+  }
+};
+```
+
+**Uses:**
+- router.get/post/put/delete() - HTTP method routing
+- params() - Parameter extraction
+- body() - Request body parsing
+- router.handle() - Request handling
+
+---
+
+### Pattern: Navigation Links (Browser)
 
 ```javascript
 document.addEventListener("click", (e) => {
@@ -269,14 +360,17 @@ window.addEventListener("popstate", () => router.handle());
 
 ---
 
-### Pattern: Query Parameters
+### Pattern: Query Parameters (Both Platforms)
 
 ```javascript
-import { args } from "@the-memoize-project/router";
+// Browser
+import { args } from "@the-memoize-project/router/browser";
+
+// Worker
+import { args } from "@the-memoize-project/router/worker";
 
 function searchPage() {
   const { q, page = "1", sort = "relevance" } = args();
-
   console.log(`Search: "${q}", Page: ${page}, Sort: ${sort}`);
 }
 ```
@@ -287,10 +381,14 @@ function searchPage() {
 
 ---
 
-### Pattern: Named Routes
+### Pattern: Named Routes (Both Platforms)
 
 ```javascript
-import router, { urlFor } from "@the-memoize-project/router";
+// Browser
+import router, { urlFor } from "@the-memoize-project/router/browser";
+
+// Worker
+import router, { urlFor } from "@the-memoize-project/router/worker";
 
 function userProfile() {}
 function postDetail() {}

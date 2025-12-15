@@ -85,9 +85,11 @@ describe("router", () => {
 - **Extension:** `.spec.js` (preferred) or `.spec.ts`
 
 **Examples:**
-- `packages/router/router.spec.js`
-- `packages/params/params.spec.js`
-- `packages/matching/matching.spec.js`
+- `packages/browser/router/router.spec.js`
+- `packages/browser/params/params.spec.js`
+- `packages/browser/matching/matching.spec.js`
+- `packages/worker/router/router.spec.js`
+- `packages/worker/match/match.spec.js`
 
 ### Test Description Format
 
@@ -638,7 +640,11 @@ bun run test --coverage
 ### Run Specific Test File
 
 ```bash
-bun run test packages/router/router.spec.js
+# Browser router tests
+bun run test packages/browser/router/router.spec.js
+
+# Worker router tests
+bun run test packages/worker/router/router.spec.js
 ```
 
 ### Run Tests in Watch Mode
@@ -650,7 +656,15 @@ bun run test --watch
 ### Run Tests for Specific Package
 
 ```bash
-bun run test packages/params
+# All browser packages
+bun run test packages/browser
+
+# All worker packages
+bun run test packages/worker
+
+# Specific package (e.g., params)
+bun run test packages/browser/params
+bun run test packages/worker/params
 ```
 
 ---

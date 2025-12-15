@@ -109,37 +109,38 @@ function navigate(path) {
 ```javascript
 import router from "@the-memoize-project/router/worker";
 
-// Define routes
+// Define API routes with HTTP methods
 router.get("/api/users/:id", getUser);
 router.post("/api/users", createUser);
 router.put("/api/users/:id", updateUser);
 router.delete("/api/users/:id", deleteUser);
 
-// Handle requests
+// Route handlers
+async function getUser(request, env, ctx) {
+  const { id } = params();
+  return new Response(JSON.stringify({ id, name: "User " + id }), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+async function createUser(request, env, ctx) {
+  const data = await body(request);
+  return new Response(JSON.stringify({ success: true, data }), {
+    status: 201,
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+// Export the fetch handler
 export default {
   async fetch(request, env, ctx) {
-    return await router.handle(request, env, ctx) ?? new Response("Not Found", { status: 404 });
-}
-
-// Page handlers
-function homePage() {
-  console.log("Home page loaded");
-  document.body.innerHTML = "<h1>Home</h1>";
-}
-
-function userPage() {
-  // Access route parameters
-  const { id } = params();
-  console.log("User page:", id);
-  document.body.innerHTML = `<h1>User: ${id}</h1>`;
-}
-
-function notFoundPage() {
-  document.body.innerHTML = "<h1>404 - Not Found</h1>";
-}
+    return await router.handle(request, env, ctx) ??
+      new Response("Not Found", { status: 404 });
+  }
+};
 ```
 
-### Listening to Navigation Events
+### Listening to Navigation Events (Browser)
 
 ```javascript
 // Listen for browser back/forward
@@ -171,16 +172,16 @@ import { params, urlFor } from "https://esm.sh/@the-memoize-project/router";
 
 ## 📦 API Reference
 
-### Core Router
+### Browser Router API
 
 #### `router(path, handler)`
 
 Define a route with a path pattern and handler function.
 
 ```javascript
-router("/users/:id", (params) => {
-  console.log("User ID:", params.id);
-});
+router("/users/:id", userPage)
+  ("/about", aboutPage)
+  .fallback(notFoundPage);
 ```
 
 **Parameters:**
@@ -221,14 +222,63 @@ router.fallback(() => {
 
 ---
 
+### Worker Router API
+
+#### `router.get(path, handler)` / `router.post(path, handler)` / etc.
+
+Define routes for specific HTTP methods (GET, POST, PUT, DELETE).
+
+```javascript
+router.get("/api/users/:id", getUser);
+router.post("/api/users", createUser);
+router.put("/api/users/:id", updateUser);
+router.delete("/api/users/:id", deleteUser);
+```
+
+**Parameters:**
+- `path` (string) - Route pattern (supports `:param` syntax)
+- `handler` (async function) - Function to call when route matches
+  - Receives `(request, env, ctx)` parameters
+  - Must return a `Response` object
+
+**Returns:** Router instance
+
+---
+
+#### `router.handle(request, env, ctx)`
+
+Match the incoming request against registered routes and execute the matching handler.
+
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    return await router.handle(request, env, ctx) ??
+      new Response("Not Found", { status: 404 });
+  }
+};
+```
+
+**Parameters:**
+- `request` (Request) - Incoming HTTP request
+- `env` (object) - Environment bindings
+- `ctx` (ExecutionContext) - Execution context
+
+**Returns:** Promise<Response> or null if no route matched
+
+---
+
 ### Helper Functions
 
-#### `params()`
+#### `params()` (Browser & Worker)
 
 Access route parameters from the current route.
 
 ```javascript
-import { params } from "@the-memoize-project/router";
+// Browser
+import { params } from "@the-memoize-project/router/browser";
+
+// Worker
+import { params } from "@the-memoize-project/router/worker";
 
 // Route: /users/:id
 // URL: /users/123
@@ -240,12 +290,16 @@ console.log(id); // "123"
 
 ---
 
-#### `args()`
+#### `args()` (Browser & Worker)
 
 Access query string parameters from the current URL.
 
 ```javascript
-import { args } from "@the-memoize-project/router";
+// Browser
+import { args } from "@the-memoize-project/router/browser";
+
+// Worker
+import { args } from "@the-memoize-project/router/worker";
 
 // URL: /search?q=router&page=2
 const { q, page } = args();
@@ -257,16 +311,40 @@ console.log(page); // "2"
 
 ---
 
-#### `urlFor(name, params)`
+#### `body(request)` (Worker only)
+
+Parse the request body from a Cloudflare Worker request.
+
+```javascript
+import { body } from "@the-memoize-project/router/worker";
+
+async function createUser(request, env, ctx) {
+  const data = await body(request);
+  console.log(data); // Parsed request body
+  return new Response(JSON.stringify({ success: true }));
+}
+```
+
+**Parameters:**
+- `request` (Request) - The incoming HTTP request
+
+**Returns:** Promise<any> - Parsed request body (JSON, form data, or text)
+
+---
+
+#### `urlFor(name, params)` (Browser & Worker)
 
 Generate a URL for a named route with parameters.
 
 ```javascript
-import { urlFor } from "@the-memoize-project/router";
+// Browser
+import { urlFor } from "@the-memoize-project/router/browser";
+
+// Worker
+import { urlFor } from "@the-memoize-project/router/worker";
 
 // Define named route
 function userPage() {}
-userPage.displayName = "userPage";
 router("/users/:id", userPage);
 
 // Generate URL
@@ -286,10 +364,10 @@ console.log(url); // "https://example.com/users/123"
 
 ### Real-World Examples
 
-#### Single Page Application
+#### Single Page Application (Browser)
 
 ```javascript
-import router, { params } from "@the-memoize-project/router";
+import router, { params } from "@the-memoize-project/router/browser";
 
 // Define routes
 router("/", homePage)
@@ -319,10 +397,97 @@ function userDetailPage() {
 
 ---
 
-#### Nested Routes with Query Parameters
+#### RESTful API with Cloudflare Workers
 
 ```javascript
-import router, { params, args } from "@the-memoize-project/router";
+import router, { params, body } from "@the-memoize-project/router/worker";
+
+// Define API routes
+router.get("/api/users", listUsers);
+router.get("/api/users/:id", getUser);
+router.post("/api/users", createUser);
+router.put("/api/users/:id", updateUser);
+router.delete("/api/users/:id", deleteUser);
+
+// Mock database (use KV, D1, or Durable Objects in production)
+const users = new Map([
+  [1, { id: 1, name: "Alice", email: "alice@example.com" }],
+  [2, { id: 2, name: "Bob", email: "bob@example.com" }],
+]);
+
+async function listUsers(request, env, ctx) {
+  const userList = Array.from(users.values());
+  return new Response(JSON.stringify(userList), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+async function getUser(request, env, ctx) {
+  const { id } = params();
+  const user = users.get(Number(id));
+
+  if (!user) {
+    return new Response("User not found", { status: 404 });
+  }
+
+  return new Response(JSON.stringify(user), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+async function createUser(request, env, ctx) {
+  const data = await body(request);
+  const newUser = { id: users.size + 1, ...data };
+  users.set(newUser.id, newUser);
+
+  return new Response(JSON.stringify(newUser), {
+    status: 201,
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+async function updateUser(request, env, ctx) {
+  const { id } = params();
+  const data = await body(request);
+  const user = users.get(Number(id));
+
+  if (!user) {
+    return new Response("User not found", { status: 404 });
+  }
+
+  const updatedUser = { ...user, ...data };
+  users.set(Number(id), updatedUser);
+
+  return new Response(JSON.stringify(updatedUser), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+async function deleteUser(request, env, ctx) {
+  const { id } = params();
+  const deleted = users.delete(Number(id));
+
+  if (!deleted) {
+    return new Response("User not found", { status: 404 });
+  }
+
+  return new Response(null, { status: 204 });
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    return await router.handle(request, env, ctx) ??
+      new Response("Not Found", { status: 404 });
+  }
+};
+```
+
+---
+
+#### Nested Routes with Query Parameters (Browser)
+
+```javascript
+import router, { params, args } from "@the-memoize-project/router/browser";
 
 router("/blog/:category", blogCategoryPage)
   ("/blog/:category/:post", blogPostPage);
@@ -342,10 +507,10 @@ function blogPostPage() {
 
 ---
 
-#### Named Routes for Link Generation
+#### Named Routes for Link Generation (Browser)
 
 ```javascript
-import router, { urlFor } from "@the-memoize-project/router";
+import router, { urlFor } from "@the-memoize-project/router/browser";
 
 function userProfile() {
   // Handler implementation
@@ -453,17 +618,27 @@ biome check --write .
 ```
 @the-memoize-project/router/
 ├── packages/
-│   ├── router/         # Core router module
-│   ├── args/           # Query string parser
-│   ├── params/         # Route parameter extractor
-│   ├── urlFor/         # Named route URL generator
-│   ├── handle/         # Route handler executor
-│   ├── matching/       # Route pattern matcher
-│   ├── listeners/      # Route registry
-│   ├── fallback/       # 404 handler
-│   ├── pushState/      # History API wrapper
-│   └── popState/       # Back/forward navigation
-├── dist/               # Built output
+│   ├── browser/        # Browser-specific implementation
+│   │   ├── router/     # Chainable router API
+│   │   ├── args/       # Query string parser
+│   │   ├── params/     # Route parameter extractor
+│   │   ├── urlFor/     # Named route URL generator
+│   │   ├── handle/     # Route handler executor
+│   │   ├── matching/   # Route pattern matcher
+│   │   ├── listeners/  # Route registry (array)
+│   │   ├── fallback/   # 404 handler
+│   │   ├── pushState/  # History API wrapper
+│   │   └── popState/   # Back/forward navigation
+│   └── worker/         # Cloudflare Workers implementation
+│       ├── router/     # HTTP method router (Proxy-based)
+│       ├── args/       # Query string parser
+│       ├── params/     # Route parameter extractor
+│       ├── urlFor/     # Named route URL generator
+│       ├── handle/     # Request handler executor
+│       ├── match/      # HTTP method + path matcher
+│       ├── listeners/  # Route registry (by HTTP method)
+│       └── body/       # Request body parser
+├── dist/               # Built output (browser.js, worker.js)
 ├── types.d.ts          # TypeScript definitions
 ├── vite.config.js      # Build configuration
 └── vitest.config.js    # Test configuration

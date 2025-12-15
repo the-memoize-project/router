@@ -4,16 +4,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   resolve: {
     alias: {
-      "@args": resolve(__dirname, "packages/args"),
-      "@fallback": resolve(__dirname, "packages/fallback"),
-      "@handle": resolve(__dirname, "packages/handle"),
-      "@listeners": resolve(__dirname, "packages/listeners"),
-      "@matching": resolve(__dirname, "packages/matching"),
-      "@params": resolve(__dirname, "packages/params"),
-      "@popState": resolve(__dirname, "packages/popState"),
-      "@pushState": resolve(__dirname, "packages/pushState"),
-      "@router": resolve(__dirname, "packages/router"),
-      "@urlFor": resolve(__dirname, "packages/urlFor"),
+      "@browser": resolve(__dirname, "packages/browser"),
+      "@worker": resolve(__dirname, "packages/worker"),
     },
   },
   test: {

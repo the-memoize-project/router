@@ -1,6 +1,6 @@
-import handle from "@handle";
-import listeners from "@listeners";
-import fallback from "@fallback";
+import fallback from "@browser/fallback";
+import handle from "@browser/handle";
+import listeners from "@browser/listeners";
 
 function router(path, page) {
   listeners.push({ path, page });

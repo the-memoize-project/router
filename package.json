@@ -39,11 +39,6 @@
   "types": "types.d.ts",
   "source": "src/index.js",
   "exports": {
-    ".": {
-      "types": "./types.d.ts",
-      "import": "./dist/router.js",
-      "require": "./dist/router.cjs"
-    },
     "./browser": {
       "types": "./types.d.ts",
       "import": "./dist/browser.js",

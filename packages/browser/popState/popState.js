@@ -1,4 +1,4 @@
-import router from "@router";
+import router from "@browser/router";
 
 const popState = () => window.addEventListener("popstate", router.handle);
 

@@ -1,5 +1,5 @@
-import listeners from "@listeners";
-import fallback from "@fallback";
+import fallback from "@browser/fallback";
+import listeners from "@browser/listeners";
 
 const matching = () => {
   return (

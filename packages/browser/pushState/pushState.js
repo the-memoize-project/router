@@ -1,4 +1,4 @@
-import router from "@router";
+import router from "@browser/router";
 
 const pushState = () => {
   history.pushState = new Proxy(history.pushState, {

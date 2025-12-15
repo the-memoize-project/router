@@ -1,4 +1,4 @@
-import listeners from "@listeners";
+import listeners from "@browser/listeners";
 
 const urlFor = (name, params = {}) => {
   const path = listeners.find(({ page }) => page?.name === name)?.path;

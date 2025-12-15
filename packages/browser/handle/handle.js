@@ -1,6 +1,6 @@
-import args from "@args";
-import params from "@params";
-import matching from "@matching";
+import args from "@browser/args";
+import matching from "@browser/matching";
+import params from "@browser/params";
 
 function handle() {
   const { page, path } = matching();

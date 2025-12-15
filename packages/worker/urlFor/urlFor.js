@@ -1,5 +1,5 @@
-import listeners from "./listeners.js";
-import { PATH_VARIABLE } from "./vars.js";
+import listeners from "../listeners/listeners.js";
+import { PATH_VARIABLE } from "../vars/vars.js";
 
 const urlFor = (page, params, host = "") => {
   const anchor = { path: "#" };

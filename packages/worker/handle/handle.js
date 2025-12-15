@@ -1,7 +1,7 @@
-import args from "./args.js";
-import body from "./body.js";
-import match from "./match.js";
-import params from "./params.js";
+import args from "../args/args.js";
+import body from "../body/body.js";
+import match from "../match/match.js";
+import params from "../params/params.js";
 
 async function handle(request, env, ctx) {
   const { page, path } = match(request);

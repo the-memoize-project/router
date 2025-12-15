@@ -1,4 +1,4 @@
-import listeners from "./listeners.js";
+import listeners from "../listeners/listeners.js";
 
 function findMatchingRoute(request) {
   const url = new URL(request.url);

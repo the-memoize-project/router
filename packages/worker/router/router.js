@@ -1,5 +1,5 @@
-import handle from "./handle.js";
-import listeners from "./listeners.js";
+import handle from "../handle/handle.js";
+import listeners from "../listeners/listeners.js";
 
 const router = new Proxy(
   {},

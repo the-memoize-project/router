@@ -16,6 +16,7 @@
 /// <reference path="./args/types.d.ts" />
 /// <reference path="./urlFor/types.d.ts" />
 /// <reference path="./body/types.d.ts" />
+/// <reference path="./headers/types.d.ts" />
 
 declare module "@the-memoize-project/router/worker" {
   export { default, Router, RouteHandler, ExecutionContext } from "./router/types";
@@ -23,4 +24,5 @@ declare module "@the-memoize-project/router/worker" {
   export { default as args, QueryParams } from "./args/types";
   export { default as urlFor } from "./urlFor/types";
   export { default as body, RequestBody } from "./body/types";
+  export { default as headers, RequestHeaders } from "./headers/types";
 }

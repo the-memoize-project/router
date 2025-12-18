@@ -1,6 +1,6 @@
 {
   "name": "@the-memoize-project/router",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Memoize Router: Declarative routing system for The Memoize Project. A lightweight, zero-dependency router for web components with reactive navigation and nested routing support.",
   "keywords": [
     "router",
